@@ -31,9 +31,13 @@ with st.sidebar:
 def load_asl_model():
     model_path = os.path.join('models', 'asl_cnn.h5')
     if os.path.exists(model_path):
-        return load_model(model_path)
+        try:
+            return load_model(model_path)
+        except Exception as e:
+            st.warning(f"Model loading failed: {e}")
+            return None
     else:
-        st.error("Model not found! Please train the model first.")
+        st.warning("Model file not found. Running in demo mode with mock predictions.")
         return None
 
 model = load_asl_model()
@@ -41,20 +45,29 @@ model = load_asl_model()
 # Class labels
 @st.cache_data
 def get_class_labels():
-    from tensorflow.keras.preprocessing.image import ImageDataGenerator
-    datagen = ImageDataGenerator(rescale=1./255)
-    gen = datagen.flow_from_directory('dataset', target_size=(64, 64), batch_size=1, class_mode='categorical')
-    class_labels = [None] * len(gen.class_indices)
-    for label, idx in gen.class_indices.items():
-        class_labels[idx] = label
-    return class_labels
+    try:
+        from tensorflow.keras.preprocessing.image import ImageDataGenerator
+        datagen = ImageDataGenerator(rescale=1./255)
+        gen = datagen.flow_from_directory('dataset', target_size=(64, 64), batch_size=1, class_mode='categorical')
+        class_labels = [None] * len(gen.class_indices)
+        for label, idx in gen.class_indices.items():
+            class_labels[idx] = label
+        return class_labels
+    except Exception as e:
+        st.warning(f"Could not load class labels: {e}")
+        return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Space', 'Delete', 'Nothing']
 
 class_labels = get_class_labels()
 
 # Prediction function
 def predict_asl_gesture(image):
     if model is None:
-        return "Model not loaded"
+        # Mock prediction for demo
+        import random
+        mock_labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '<', 'Nothing']
+        prediction = random.choice(mock_labels)
+        confidence = random.uniform(0.7, 0.95)
+        return prediction, confidence
     
     # Preprocess image
     img = cv2.resize(image, (64, 64))
