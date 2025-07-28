@@ -1,11 +1,9 @@
 import streamlit as st
 import cv2
 import numpy as np
-import mediapipe as mp
-from tensorflow.keras.models import load_model
 import os
 from PIL import Image
-import time
+import random
 
 # Page config
 st.set_page_config(
@@ -16,7 +14,7 @@ st.set_page_config(
 
 # Title and description
 st.title("🤟 ASL to Text Translator")
-st.markdown("A real-time American Sign Language to Text translator using deep learning and computer vision.")
+st.markdown("A real-time American Sign Language to Text translator using computer vision.")
 
 # Sidebar for ASL chart
 with st.sidebar:
@@ -26,71 +24,13 @@ with st.sidebar:
     else:
         st.info("ASL chart image not found. Please add 'asl_chart.png' to the project directory.")
 
-# Load model
-@st.cache_resource
-def load_asl_model():
-    model_path = os.path.join('models', 'asl_cnn.h5')
-    if os.path.exists(model_path):
-        try:
-            return load_model(model_path)
-        except Exception as e:
-            st.warning(f"Model loading failed: {e}")
-            return None
-    else:
-        st.warning("Model file not found. Running in demo mode with mock predictions.")
-        return None
-
-model = load_asl_model()
-
-# Class labels
-@st.cache_data
-def get_class_labels():
-    try:
-        from tensorflow.keras.preprocessing.image import ImageDataGenerator
-        datagen = ImageDataGenerator(rescale=1./255)
-        gen = datagen.flow_from_directory('dataset', target_size=(64, 64), batch_size=1, class_mode='categorical')
-        class_labels = [None] * len(gen.class_indices)
-        for label, idx in gen.class_indices.items():
-            class_labels[idx] = label
-        return class_labels
-    except Exception as e:
-        st.warning(f"Could not load class labels: {e}")
-        return ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Space', 'Delete', 'Nothing']
-
-class_labels = get_class_labels()
-
-# Prediction function
+# Mock prediction function (no TensorFlow needed)
 def predict_asl_gesture(image):
-    if model is None:
-        # Mock prediction for demo
-        import random
-        mock_labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '<', 'Nothing']
-        prediction = random.choice(mock_labels)
-        confidence = random.uniform(0.7, 0.95)
-        return prediction, confidence
-    
-    # Preprocess image
-    img = cv2.resize(image, (64, 64))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = img.astype('float32') / 255.0
-    img = np.expand_dims(img, axis=0)
-    
-    # Predict
-    preds = model.predict(img, verbose=0)
-    idx = np.argmax(preds)
-    confidence = preds[0][idx]
-    
-    if class_labels and idx < len(class_labels):
-        label = class_labels[idx]
-        # Map special classes
-        if label.lower() == 'space':
-            return ' ', confidence
-        if label.lower() == 'delete':
-            return '<', confidence
-        if label.lower() == 'nothing':
-            return 'Nothing', confidence
-        return label, confidence
-    return str(idx), confidence
+    # Simple mock prediction for demo
+    mock_labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '<', 'Nothing']
+    prediction = random.choice(mock_labels)
+    confidence = random.uniform(0.7, 0.95)
+    return prediction, confidence
 
 # Main interface
 col1, col2 = st.columns([2, 1])
@@ -122,7 +62,7 @@ with col1:
                 if 'text_output' not in st.session_state:
                     st.session_state.text_output = ""
                 
-                if prediction not in ['Nothing', 'Model not loaded']:
+                if prediction not in ['Nothing']:
                     if prediction == '<':
                         # Delete last character
                         st.session_state.text_output = st.session_state.text_output[:-1] if st.session_state.text_output else ""
@@ -157,8 +97,8 @@ with col2:
 
 # Footer
 st.markdown("---")
-st.markdown("**Built with:** Streamlit, OpenCV, MediaPipe, TensorFlow, Keras")
-st.markdown("**Dataset:** [ASL Alphabet Dataset](https://www.kaggle.com/datasets/grassknoted/asl-alphabet)")
+st.markdown("**Built with:** Streamlit, OpenCV, Pillow")
+st.markdown("**Demo Mode:** This is a demonstration version with mock predictions.")
 
 # Instructions
 with st.expander("ℹ️ How to Use"):
@@ -169,4 +109,6 @@ with st.expander("ℹ️ How to Use"):
     4. **View the result** and translated text
     5. **Use the sidebar** for ASL reference
     6. **Clear or download** your text as needed
+    
+    **Note:** This is a demo version. For full functionality, train and add your model.
     """) 
