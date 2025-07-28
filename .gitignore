@@ -1,0 +1,10 @@
+dataset/
+models/
+*.h5
+*.h5.h5
+bfg-1.14.0.jar
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/ 
