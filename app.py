@@ -1,5 +1,4 @@
 import streamlit as st
-import cv2
 import numpy as np
 import os
 from PIL import Image
@@ -24,7 +23,7 @@ with st.sidebar:
     else:
         st.info("ASL chart image not found. Please add 'asl_chart.png' to the project directory.")
 
-# Mock prediction function (no TensorFlow needed)
+# Mock prediction function (no OpenCV needed)
 def predict_asl_gesture(image):
     # Simple mock prediction for demo
     mock_labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ', '<', 'Nothing']
@@ -97,7 +96,7 @@ with col2:
 
 # Footer
 st.markdown("---")
-st.markdown("**Built with:** Streamlit, OpenCV, Pillow")
+st.markdown("**Built with:** Streamlit, Pillow, NumPy")
 st.markdown("**Demo Mode:** This is a demonstration version with mock predictions.")
 
 # Instructions
